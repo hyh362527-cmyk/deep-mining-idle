@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>深礦紀元 · 挖礦時代</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpolygon points='32,4 58,22 50,56 14,56 6,22' fill='%23f2b544'/%3E%3Cpolygon points='32,4 58,22 32,32' fill='%23ffd97a'/%3E%3Cpolygon points='32,32 50,56 14,56' fill='%23c8872a'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://miaoda.feishu.cn">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Chakra+Petch:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<style>
+/* ================= 設計 Tokens ================= */
+:root{
+  --bg:#14110d;
+  --bg2:#1a1510;
+  --panel:#201a14;
+  --panel2:#2a2219;
+  --line:#3b3125;
+  --line2:#4a3d2d;
+  --text:#efe5d3;
+  --dim:#a9987f;
+  --faint:#7a6c57;
+  --gold:#f2b544;
+  --gold-hi:#ffd97a;
+  --copper:#d9763f;
+  --teal:#4ec9b0;
+  --red:#e0624f;
+  --green:#8fce6a;
+  --shadow:0 8px 24px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  background:
+    radial-gradient(1200px 600px at 70% -10%, #241d12 0%, transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, #1d1a14 0%, transparent 55%),
+    var(--bg);
+  color:var(--text);
+  line-height:1.55;
+  min-height:100vh;
+  -webkit-tap-highlight-color:transparent;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+.num{font-family:"Chakra Petch",monospace;font-variant-numeric:tabular-nums}
+
+/* ================= 頂部欄 ================= */
+.topbar{
+  max-width:1180px;margin:0 auto;padding:14px 18px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand h1{
+  font-family:"Chakra Petch",sans-serif;font-weight:700;font-size:22px;
+  letter-spacing:1px;color:var(--gold-hi);
+}
+.brand .era{font-size:12.5px;color:var(--dim);border:1px solid var(--line2);padding:2px 9px;border-radius:20px}
+.roadmap{display:flex;align-items:center;gap:6px;margin-left:4px;flex-wrap:wrap}
+.roadmap .node{
+  font-size:12px;color:var(--dim);
+  display:flex;align-items:center;gap:4px;
+}
+.roadmap .node.now{color:var(--gold)}
+.roadmap .node.locked{cursor:pointer}
+.roadmap .arrow{color:var(--faint);font-size:11px}
+.top-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.icon-btn{
+  width:40px;height:40px;border-radius:10px;border:1px solid var(--line2);
+  background:var(--panel);font-size:17px;display:grid;place-items:center;
+  transition:transform .08s,border-color .15s;
+}
+.icon-btn:hover{border-color:var(--gold);transform:translateY(-1px)}
+.icon-btn:active{transform:translateY(1px)}
+.prestige-btn{
+  height:40px;padding:0 14px;border-radius:10px;border:1px solid var(--line2);
+  background:linear-gradient(180deg,#33234d,#241838);
+  display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:500;
+}
+.prestige-btn:hover{border-color:var(--teal)}
+.prestige-btn .crystal{font-size:16px}
+
+/* ================= 主版面 ================= */
+.layout{
+  max-width:1180px;margin:6px auto 40px;padding:0 18px;
+  display:grid;grid-template-columns:1fr;gap:16px;
+}
+@media(min-width:920px){
+  .layout{grid-template-columns:1.15fr .85fr}
+}
+.card{
+  background:linear-gradient(180deg,var(--panel) 0%,var(--bg2) 100%);
+  border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);
+  padding:18px;
+}
+.card-title{
+  font-family:"Chakra Petch",sans-serif;font-size:13px;letter-spacing:2px;
+  color:var(--dim);text-transform:uppercase;margin-bottom:14px;
+  display:flex;align-items:center;gap:8px;
+}
+.card-title::after{content:"";flex:1;height:1px;background:var(--line)}
+
+/* ---------- 挖礦區 ---------- */
+.layer-strip{display:flex;gap:8px;justify-content:center;margin-bottom:16px;flex-wrap:wrap}
+.layer-chip{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:8px 10px;border-radius:12px;border:1px solid var(--line);
+  background:var(--panel2);min-width:64px;opacity:.55;
+}
+.layer-chip .ic{font-size:20px}
+.layer-chip .lb{font-size:11px;color:var(--dim)}
+.layer-chip.current{opacity:1;border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}
+.layer-chip.current .lb{color:var(--gold-hi)}
+
+.mine-stage{
+  display:flex;flex-direction:column;align-items:center;
+  padding:10px 0 6px;position:relative;
+}
+.rock-btn{
+  width:172px;height:172px;border-radius:50%;
+  display:grid;place-items:center;font-size:86px;
+  background:radial-gradient(circle at 35% 30%,var(--panel2),#17120c 75%);
+  border:2px solid var(--line2);
+  box-shadow:0 10px 30px rgba(0,0,0,.55), inset 0 2px 10px rgba(255,255,255,.05);
+  user-select:none;position:relative;transition:transform .06s,border-color .15s;
+}
+.rock-btn:hover{border-color:var(--gold)}
+.rock-btn:active{transform:scale(.94)}
+.rock-btn .ring{
+  position:absolute;inset:-8px;border-radius:50%;
+  border:2px solid var(--gold);opacity:0;pointer-events:none;
+}
+.rock-btn.hit .ring{animation:ring .45s ease-out}
+@keyframes ring{
+  0%{opacity:.7;transform:scale(.95)}
+  100%{opacity:0;transform:scale(1.25)}
+}
+.float-text{
+  position:absolute;pointer-events:none;font-family:"Chakra Petch",sans-serif;
+  font-weight:700;color:var(--gold-hi);font-size:19px;
+  text-shadow:0 2px 6px rgba(0,0,0,.7);
+  animation:floatUp .9s ease-out forwards;
+}
+@keyframes floatUp{
+  0%{opacity:1;transform:translate(-50%,0)}
+  100%{opacity:0;transform:translate(-50%,-64px)}
+}
+.mine-hint{margin-top:12px;font-size:13px;color:var(--dim)}
+.mine-hint b{color:var(--gold-hi)}
+
+.stat-row{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px;
+}
+.stat{
+  background:var(--panel2);border:1px solid var(--line);border-radius:12px;
+  padding:11px 12px;text-align:center;
+}
+.stat .v{font-family:"Chakra Petch",sans-serif;font-size:19px;font-weight:700;color:var(--gold-hi)}
+.stat .l{font-size:11.5px;color:var(--dim);margin-top:2px}
+
+.unlock-btn{
+  width:100%;margin-top:14px;height:48px;border-radius:12px;
+  border:1px dashed var(--line2);background:var(--panel2);
+  font-size:14px;color:var(--dim);display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.unlock-btn.ready{
+  border-style:solid;border-color:var(--gold);color:var(--gold-hi);
+  background:linear-gradient(180deg,#3a2c12,#2a2010);
+}
+.unlock-btn.ready:hover{filter:brightness(1.12)}
+.unlock-btn.ready:active{transform:translateY(1px)}
+.run-info{margin-top:12px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--faint)}
+.wipe-link{font-size:11.5px;cursor:pointer;text-decoration:underline}
+.wipe-link:hover{color:var(--red)}
+
+/* ---------- 商店區 ---------- */
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.tab{
+  flex:1;height:40px;border-radius:10px;border:1px solid var(--line);
+  background:var(--panel2);font-size:13.5px;color:var(--dim);
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.tab.active{border-color:var(--gold);color:var(--gold-hi);background:#33260f}
+.buy-amount{display:flex;gap:6px;margin-bottom:12px}
+.buy-amount button{
+  flex:1;height:32px;border-radius:8px;border:1px solid var(--line);
+  background:var(--panel2);font-size:12px;color:var(--dim);
+}
+.buy-amount button.active{border-color:var(--copper);color:var(--copper)}
+.shop-list{display:flex;flex-direction:column;gap:9px;max-height:470px;overflow-y:auto;padding-right:4px}
+.shop-list::-webkit-scrollbar{width:8px}
+.shop-list::-webkit-scrollbar-thumb{background:var(--line2);border-radius:8px}
+
+.item{
+  display:flex;align-items:center;gap:11px;width:100%;text-align:left;
+  background:var(--panel2);border:1px solid var(--line);border-radius:12px;
+  padding:10px 12px;transition:border-color .15s,opacity .15s;
+}
+.item:not(:disabled):hover{border-color:var(--gold)}
+.item:not(:disabled):active{transform:translateY(1px)}
+.item:disabled{opacity:.45;cursor:not-allowed}
+.item .ic{font-size:28px;width:38px;text-align:center;flex:none}
+.item .meta{flex:1;min-width:0}
+.item .name{font-size:14px;font-weight:500;display:flex;align-items:center;gap:7px}
+.item .name .count{
+  font-family:"Chakra Petch",sans-serif;font-size:12px;color:var(--gold);
+  border:1px solid var(--line2);border-radius:20px;padding:0 8px;
+}
+.item .desc{font-size:11.5px;color:var(--dim);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .cost{
+  font-family:"Chakra Petch",sans-serif;font-size:13px;font-weight:600;
+  color:var(--gold-hi);flex:none;text-align:right;
+}
+.item .cost .small{display:block;font-size:10.5px;color:var(--faint);font-weight:400}
+.empty-hint{font-size:13px;color:var(--faint);text-align:center;padding:30px 0}
+
+/* ================= 彈窗 ================= */
+.modal-back{
+  position:fixed;inset:0;background:rgba(8,6,4,.72);backdrop-filter:blur(3px);
+  display:none;align-items:center;justify-content:center;padding:20px;z-index:50;
+}
+.modal-back.show{display:flex}
+.modal{
+  width:100%;max-width:440px;background:linear-gradient(180deg,var(--panel),var(--bg2));
+  border:1px solid var(--line2);border-radius:18px;padding:22px;box-shadow:var(--shadow);
+}
+.modal h2{font-family:"Chakra Petch",sans-serif;font-size:19px;color:var(--gold-hi);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.modal p{font-size:13.5px;color:var(--dim);margin-bottom:14px}
+.modal .big-num{
+  font-family:"Chakra Petch",sans-serif;font-size:30px;font-weight:700;
+  color:var(--teal);text-align:center;margin:6px 0 2px;
+}
+.modal .sub{text-align:center;font-size:12px;color:var(--dim);margin-bottom:16px}
+.modal .row{display:flex;justify-content:space-between;font-size:13px;padding:7px 2px;border-bottom:1px solid var(--line)}
+.modal .row:last-of-type{border-bottom:none}
+.modal .row b{font-family:"Chakra Petch",sans-serif;color:var(--gold-hi)}
+.modal-actions{display:flex;gap:10px;margin-top:18px}
+.btn{
+  flex:1;height:46px;border-radius:12px;font-size:14.5px;font-weight:500;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+}
+.btn-primary{background:linear-gradient(180deg,var(--gold),#d99a2b);color:#241a06;font-weight:700}
+.btn-primary:hover{filter:brightness(1.08)}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.btn-ghost{border:1px solid var(--line2);color:var(--dim);background:var(--panel2)}
+.btn-ghost:hover{border-color:var(--gold);color:var(--gold-hi)}
+.btn-danger{background:linear-gradient(180deg,#d9534a,#b3392f);color:#fff}
+.btn-danger:hover{filter:brightness(1.08)}
+.btn-danger:disabled{opacity:.45;cursor:not-allowed}
+
+/* ================= Toast ================= */
+.toast-wrap{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:60;display:flex;flex-direction:column;gap:8px;align-items:center}
+.toast{
+  background:#2c2318;border:1px solid var(--line2);border-radius:30px;
+  padding:9px 18px;font-size:13px;color:var(--text);box-shadow:var(--shadow);
+  animation:toastIn .25s ease-out;
+}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+@media(max-width:520px){
+  .brand h1{font-size:18px}
+  .rock-btn{width:148px;height:148px;font-size:74px}
+  .stat .v{font-size:16px}
+  .shop-list{max-height:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== 頂部欄 ===== -->
+<header class="topbar">
+  <div class="brand">
+    <h1>⛏️ 深礦紀元</h1>
+    <span class="era">時代 1／4：挖礦</span>
+  </div>
+  <div class="roadmap">
+    <span class="node now">⛏️ 挖礦</span>
+    <span class="arrow">→</span>
+    <span class="node locked" data-era="能源">⚡ 能源</span>
+    <span class="arrow">→</span>
+    <span class="node locked" data-era="工廠">🏭 工廠</span>
+    <span class="arrow">→</span>
+    <span class="node locked" data-era="太空">🚀 太空</span>
+  </div>
+  <div class="top-actions">
+    <button class="prestige-btn" id="prestigeOpen" title="聲望重置">
+      <span class="crystal">💠</span><span class="num" id="crystalTop">0</span>
+    </button>
+    <button class="icon-btn" id="muteBtn" title="音效開關">🔊</button>
+  </div>
+</header>
+
+<!-- ===== 主版面 ===== -->
+<main class="layout">
+
+  <!-- 挖礦區 -->
+  <section class="card">
+    <div class="card-title">🪨 礦脈</div>
+    <div class="layer-strip" id="layerStrip"></div>
+    <div class="mine-stage">
+      <button class="rock-btn" id="rockBtn" aria-label="敲礦">
+        <span id="rockIcon">🟫</span><span class="ring"></span>
+      </button>
+      <div class="mine-hint">每次敲擊 <b class="num" id="clickPower">1</b> 礦石</div>
+    </div>
+    <div class="stat-row">
+      <div class="stat"><div class="v num" id="oreNow">0</div><div class="l">礦石</div></div>
+      <div class="stat"><div class="v num" id="ppsNow">0</div><div class="l">每秒產出</div></div>
+      <div class="stat"><div class="v num" id="depthNow">0m</div><div class="l">開採深度</div></div>
+    </div>
+    <button class="unlock-btn" id="unlockBtn"></button>
+    <div class="run-info">
+      <span>本輪累計 <span class="num" id="runOre">0</span> 礦石</span>
+      <span>遊玩 <span class="num" id="playTime">0</span></span>
+      <span class="wipe-link" id="wipeOpen">清除存檔</span>
+    </div>
+  </section>
+
+  <!-- 商店區 -->
+  <section class="card">
+    <div class="card-title">🛒 補給站</div>
+    <div class="tabs">
+      <button class="tab active" data-tab="miners">👷 礦工</button>
+      <button class="tab" data-tab="upgrades">⬆️ 升級</button>
+    </div>
+    <div class="buy-amount" id="buyAmount">
+      <button class="active" data-q="1">×1</button>
+      <button data-q="10">×10</button>
+      <button data-q="max">最高</button>
+    </div>
+    <div class="shop-list" id="shopList"></div>
+  </section>
+
+</main>
+
+<!-- ===== 聲望彈窗 ===== -->
+<div class="modal-back" id="prestigeModal">
+  <div class="modal">
+    <h2>💠 深核水晶</h2>
+    <p>深入地核後重置本輪進度，換取永久增產的深核水晶。礦石、礦工、升級、岩層都會歸零，水晶與增產永久保留。</p>
+    <div class="big-num num" id="pendingCrystals">0</div>
+    <div class="sub">本次重置可獲得</div>
+    <div class="row"><span>已持有水晶</span><b class="num" id="ownedCrystals">0</b></div>
+    <div class="row"><span>當前永久增產</span><b class="num" id="currentBonus">+0%</b></div>
+    <div class="row"><span>重置後增產</span><b class="num" id="nextBonus">+0%</b></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" data-close>取消</button>
+      <button class="btn btn-danger" id="prestigeDo">💠 重置換取</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 離線收益彈窗 ===== -->
+<div class="modal-back" id="offlineModal">
+  <div class="modal">
+    <h2>🕯️ 歡迎回來</h2>
+    <p id="offlineText">你離線的這段時間，礦工們依然認真工作。</p>
+    <div class="big-num num" id="offlineAmount">0</div>
+    <div class="sub">離線期間產出礦石（離線效率 50%）</div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" data-close>收下</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 確認彈窗（重置存檔） ===== -->
+<div class="modal-back" id="wipeModal">
+  <div class="modal">
+    <h2>⚠️ 清除存檔</h2>
+    <p>這會刪除所有進度（包含深核水晶），且無法復原。確定要重新開始嗎？</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" data-close>取消</button>
+      <button class="btn btn-danger" id="wipeDo">確定清除</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+/* ================= 資料定義 ================= */
+const LAYERS = [
+  {name:'表土層', icon:'🟫', cost:0,       click:1,    mult:1},
+  {name:'煤層',   icon:'⚫', cost:150,     click:8,    mult:2},
+  {name:'鐵層',   icon:'🪨', cost:2000,    click:45,   mult:3.5},
+  {name:'金層',   icon:'🟨', cost:25000,   click:260,  mult:6},
+  {name:'寶石層', icon:'💎', cost:400000,  click:1500, mult:10},
+  {name:'深岩層', icon:'🌋', cost:7500000, click:9000, mult:18},
+];
+const MINERS = [
+  {id:'m1', name:'實習礦工', icon:'👷', base:15,     prod:0.2, growth:1.15},
+  {id:'m2', name:'手持電鑽', icon:'🪛', base:120,    prod:1.2, growth:1.15},
+  {id:'m3', name:'運礦台車', icon:'🚃', base:1300,   prod:8,   growth:1.15},
+  {id:'m4', name:'鑽井平台', icon:'🏗️', base:14000,  prod:50,  growth:1.15},
+  {id:'m5', name:'自動礦機', icon:'🤖', base:170000, prod:320, growth:1.15},
+];
+const UPGRADES = [
+  {id:'u1',  name:'強化十字鎬', icon:'⛏️', cost:100,     type:'click',  mult:2},
+  {id:'u2',  name:'礦工培訓',   icon:'🎓', cost:600,     type:'miner',  target:'m1', mult:2},
+  {id:'u3',  name:'合金鑽頭',   icon:'🔩', cost:2500,    type:'miner',  target:'m2', mult:2},
+  {id:'u4',  name:'雙倍敲擊',   icon:'✊', cost:5000,    type:'click',  mult:2},
+  {id:'u5',  name:'台車軸承',   icon:'🛞', cost:12000,   type:'miner',  target:'m3', mult:2},
+  {id:'u6',  name:'爆破工程',   icon:'🧨', cost:40000,   type:'global', mult:1.5},
+  {id:'u7',  name:'平台自動化', icon:'⚙️', cost:120000,  type:'miner',  target:'m4', mult:2},
+  {id:'u8',  name:'AI 挖礦',    icon:'🧠', cost:500000,  type:'miner',  target:'m5', mult:2},
+  {id:'u9',  name:'超級鎬',     icon:'🔨', cost:1500000, type:'click',  mult:3},
+  {id:'u10', name:'量子採礦',   icon:'✨', cost:10000000,type:'global', mult:2},
+];
+
+/* ================= 狀態 ================= */
+const SAVE_KEY = 'shenkuang_save_v1';
+function defaultState(){
+  return {
+    ore:0, runOre:0,
+    layer:0,
+    miners:Object.fromEntries(MINERS.map(m=>[m.id,0])),
+    upgrades:{},
+    crystals:0,
+    muted:false,
+    playMs:0,
+    lastSave:Date.now(),
+  };
+}
+let state = defaultState();
+
+/* ================= 數值計算 ================= */
+const prestigeMult = () => 1 + state.crystals*0.05;
+function clickMult(){
+  let m=1;
+  for(const u of UPGRADES){ if(state.upgrades[u.id] && u.type==='click') m*=u.mult; }
+  return m;
+}
+function globalMult(){
+  let m=1;
+  for(const u of UPGRADES){ if(state.upgrades[u.id] && u.type==='global') m*=u.mult; }
+  return m;
+}
+function minerMult(id){
+  let m=1;
+  for(const u of UPGRADES){ if(state.upgrades[u.id] && u.type==='miner' && u.target===id) m*=u.mult; }
+  return m;
+}
+function clickPower(){
+  const L=LAYERS[state.layer];
+  return L.click*clickMult()*globalMult()*prestigeMult();
+}
+function minerPps(i){
+  const m=MINERS[i], L=LAYERS[state.layer];
+  return state.miners[m.id]*m.prod*L.mult*minerMult(m.id)*globalMult()*prestigeMult();
+}
+function totalPps(){
+  let s=0; for(let i=0;i<MINERS.length;i++) s+=minerPps(i); return s;
+}
+function minerCost(i){
+  const m=MINERS[i];
+  return m.base*Math.pow(m.growth, state.miners[m.id]);
+}
+function bulkCost(i,q){
+  const m=MINERS[i], n=state.miners[m.id];
+  return m.base*Math.pow(m.growth,n)*(Math.pow(m.growth,q)-1)/(m.growth-1);
+}
+function maxBuy(i){
+  const m=MINERS[i], n=state.miners[m.id];
+  const v=state.ore*(m.growth-1)/(m.base*Math.pow(m.growth,n))+1;
+  if(v<=1) return 0;
+  return Math.floor(Math.log(v)/Math.log(m.growth));
+}
+function pendingCrystals(){
+  return Math.floor(Math.sqrt(state.runOre/1e6));
+}
+
+/* ================= 格式化 ================= */
+const SUFFIX=['','K','M','B','T','Qa','Qi','Sx','Sp','Oc','No','Dc'];
+function fmt(x){
+  if(!isFinite(x)) return '∞';
+  if(x<1) return x===0?'0':x.toFixed(1);
+  if(x<1000){
+    if(x<100 && x%1!==0) return x.toFixed(1);
+    return Math.floor(x).toLocaleString();
+  }
+  const tier=Math.floor(Math.log10(x)/3);
+  if(tier<SUFFIX.length){
+    const scaled=x/Math.pow(10,tier*3);
+    return (scaled>=100?scaled.toFixed(0):scaled>=10?scaled.toFixed(1):scaled.toFixed(2))+SUFFIX[tier];
+  }
+  return x.toExponential(2).replace('e+','e');
+}
+function fmtTime(ms){
+  const s=Math.floor(ms/1000);
+  const h=Math.floor(s/3600), m=Math.floor(s%3600/60), ss=s%60;
+  if(h>0) return h+'時'+m+'分';
+  if(m>0) return m+'分'+ss+'秒';
+  return ss+'秒';
+}
+
+/* ================= 音效（Web Audio 合成） ================= */
+let AC=null, masterGain=null;
+function initAudio(){
+  if(AC) return;
+  AC=new (window.AudioContext||window.webkitAudioContext)();
+  masterGain=AC.createGain();
+  masterGain.gain.value=state.muted?0:0.4;
+  masterGain.connect(AC.destination);
+}
+function resumeAudio(){ if(AC && AC.state==='suspended') AC.resume(); }
+function beep(freq,dur,type,vol,slideTo,when){
+  if(!AC || state.muted) return;
+  const t=AC.currentTime+(when||0);
+  const o=AC.createOscillator(), g=AC.createGain();
+  o.type=type; o.frequency.setValueAtTime(freq,t);
+  if(slideTo) o.frequency.exponentialRampToValueAtTime(slideTo,t+dur);
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(vol,t+0.008);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g); g.connect(masterGain);
+  o.start(t); o.stop(t+dur+0.02);
+}
+const sfxClick   = ()=>beep(180,0.07,'triangle',0.5,90);
+const sfxBuy     = ()=>{beep(520,0.09,'square',0.3);beep(780,0.12,'square',0.3,null,0.07);};
+const sfxUpgrade = ()=>{beep(440,0.08,'square',0.3);beep(660,0.08,'square',0.3,null,0.08);beep(880,0.14,'square',0.3,null,0.16);};
+const sfxNo      = ()=>beep(110,0.12,'sawtooth',0.25,70);
+const sfxUnlock  = ()=>[523,659,784,1046].forEach((f,i)=>beep(f,0.16,'triangle',0.35,null,i*0.09));
+const sfxPrestige= ()=>[392,523,659,784,1046,1318].forEach((f,i)=>beep(f,0.22,'sine',0.35,null,i*0.1));
+
+/* ================= 存檔 ================= */
+function save(){
+  state.lastSave=Date.now();
+  try{ localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }catch(e){}
+}
+function load(){
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);
+    if(!raw) return false;
+    const d=JSON.parse(raw);
+    state=Object.assign(defaultState(),d);
+    state.miners=Object.assign(Object.fromEntries(MINERS.map(m=>[m.id,0])), d.miners||{});
+    state.upgrades=d.upgrades||{};
+    return true;
+  }catch(e){ return false; }
+}
+function offlineCalc(){
+  const now=Date.now();
+  const elapsed=Math.min(now-(state.lastSave||now), 8*3600*1000);
+  if(elapsed<60000) return;
+  const gain=totalPps()*0.5*elapsed/1000;
+  if(gain<1) return;
+  state.ore+=gain; state.runOre+=gain;
+  document.getElementById('offlineText').textContent='你離線了 '+fmtTime(elapsed)+'，礦工們依然認真工作。';
+  document.getElementById('offlineAmount').textContent=fmt(gain);
+  document.getElementById('offlineModal').classList.add('show');
+}
+
+/* ================= 介面：DOM 引用 ================= */
+const $=id=>document.getElementById(id);
+const layerStrip=$('layerStrip'), shopList=$('shopList');
+let currentTab='miners', buyQty='1';
+
+/* ================= 介面：靜態建構 ================= */
+function buildLayerStrip(){
+  layerStrip.innerHTML='';
+  LAYERS.forEach((L,i)=>{
+    const d=document.createElement('div');
+    d.className='layer-chip';
+    d.innerHTML='<span class="ic">'+L.icon+'</span><span class="lb">'+L.name+'</span>';
+    layerStrip.appendChild(d);
+  });
+}
+function renderShop(){
+  shopList.innerHTML='';
+  if(currentTab==='miners'){
+    MINERS.forEach((m,i)=>{
+      const owned=state.miners[m.id];
+      const q=buyQty==='max'?Math.max(1,maxBuy(i)):parseInt(buyQty,10);
+      const cost=bulkCost(i,q);
+      const can=buyQty==='max'?maxBuy(i)>=1:Math.min(parseInt(buyQty,10),maxBuy(i))>=1;
+      const b=document.createElement('button');
+      b.className='item'; b.disabled=!can;
+      const perEach=m.prod*LAYERS[state.layer].mult*minerMult(m.id)*globalMult()*prestigeMult();
+      b.innerHTML=
+        '<span class="ic">'+m.icon+'</span>'+
+        '<span class="meta"><span class="name">'+m.name+'<span class="count">×'+owned+'</span></span>'+
+        '<span class="desc">每台產出 '+fmt(perEach)+'／秒</span></span>'+
+        '<span class="cost">'+fmt(cost)+(buyQty==='1'?'':'<span class="small">×'+(buyQty==='max'?maxBuy(i):q)+'</span>')+'</span>';
+      b.onclick=()=>buyMiner(i);
+      shopList.appendChild(b);
+    });
+  }else{
+    let any=false;
+    UPGRADES.forEach(u=>{
+      if(state.upgrades[u.id]) return;
+      any=true;
+      const b=document.createElement('button');
+      b.className='item'; b.disabled=state.ore<u.cost; b.dataset.id=u.id;
+      const desc=u.type==='click'?'敲擊產出 ×'+u.mult:u.type==='global'?'全部產出 ×'+u.mult:MINERS.find(x=>x.id===u.target).name+' ×'+u.mult;
+      b.innerHTML=
+        '<span class="ic">'+u.icon+'</span>'+
+        '<span class="meta"><span class="name">'+u.name+'</span><span class="desc">'+desc+'</span></span>'+
+        '<span class="cost">'+fmt(u.cost)+'</span>';
+      b.onclick=()=>buyUpgrade(u.id);
+      shopList.appendChild(b);
+    });
+    if(!any) shopList.innerHTML='<div class="empty-hint">所有升級都已購買 ✦</div>';
+  }
+}
+/* 每幀就地更新，避免重建造成 hover 閃爍 */
+function updateShopLive(){
+  if(!shopList.children.length) return;
+  if(currentTab==='miners'){
+    [...shopList.children].forEach((b,i)=>{
+      const q=buyQty==='max'?Math.max(1,maxBuy(i)):parseInt(buyQty,10);
+      const cost=bulkCost(i,q);
+      const can=buyQty==='max'?maxBuy(i)>=1:Math.min(parseInt(buyQty,10),maxBuy(i))>=1;
+      b.disabled=!can;
+      b.querySelector('.cost').childNodes[0].nodeValue=fmt(cost);
+      const small=b.querySelector('.cost .small');
+      if(small) small.textContent='×'+(buyQty==='max'?maxBuy(i):q);
+      b.querySelector('.count').textContent='×'+state.miners[MINERS[i].id];
+    });
+  }else{
+    [...shopList.children].forEach(b=>{
+      const u=UPGRADES.find(x=>x.id===b.dataset.id);
+      if(u) b.disabled=state.ore<u.cost;
+    });
+  }
+}
+
+/* ================= 介面：動態 HUD ================= */
+function updateHud(){
+  $('oreNow').textContent=fmt(state.ore);
+  $('ppsNow').textContent=fmt(totalPps());
+  $('clickPower').textContent=fmt(clickPower());
+  $('runOre').textContent=fmt(state.runOre);
+  $('crystalTop').textContent=fmt(state.crystals);
+  $('playTime').textContent=fmtTime(state.playMs);
+  $('rockIcon').textContent=LAYERS[state.layer].icon;
+  $('depthNow').textContent=(state.layer*120)+'m';
+  [...layerStrip.children].forEach((c,i)=>c.classList.toggle('current',i===state.layer));
+  const next=LAYERS[state.layer+1];
+  const btn=$('unlockBtn');
+  if(next){
+    btn.className='unlock-btn'+(state.ore>=next.cost?' ready':'');
+    btn.innerHTML='<span>'+next.icon+' 挖掘下一層：'+next.name+'</span><span class="num">'+fmt(next.cost)+'</span>';
+  }else{
+    btn.className='unlock-btn';
+    btn.innerHTML='🌌 已到達最深岩層，靜待能源時代';
+  }
+}
+
+/* ================= 動作 ================= */
+function floatText(e,v){
+  const stage=document.querySelector('.mine-stage');
+  const el=document.createElement('span');
+  el.className='float-text'; el.textContent='+'+fmt(v);
+  const rect=stage.getBoundingClientRect();
+  let x=rect.width/2;
+  if(e && e.clientX) x=e.clientX-rect.left;
+  el.style.left=x+'px'; el.style.top='42%';
+  stage.appendChild(el);
+  setTimeout(()=>el.remove(),900);
+}
+$('rockBtn').onclick=e=>{
+  initAudio(); resumeAudio();
+  const p=clickPower();
+  state.ore+=p; state.runOre+=p;
+  const rb=$('rockBtn');
+  rb.classList.remove('hit'); void rb.offsetWidth; rb.classList.add('hit');
+  sfxClick(); floatText(e,p);
+};
+function buyMiner(i){
+  initAudio();
+  let q=buyQty==='max'?maxBuy(i):Math.min(parseInt(buyQty,10),maxBuy(i));
+  if(!q||q<=0){ sfxNo(); return; }
+  const c=bulkCost(i,q);
+  if(state.ore<c){ sfxNo(); return; }
+  state.ore-=c; state.miners[MINERS[i].id]+=q;
+  sfxBuy();
+  renderShop(); updateHud();
+}
+function buyUpgrade(id){
+  initAudio();
+  const u=UPGRADES.find(x=>x.id===id);
+  if(state.upgrades[id]||state.ore<u.cost){ sfxNo(); return; }
+  state.ore-=u.cost; state.upgrades[id]=true;
+  sfxUpgrade(); toast(u.icon+' '+u.name+'：已生效');
+  renderShop(); updateHud();
+}
+$('unlockBtn').onclick=()=>{
+  initAudio();
+  const next=LAYERS[state.layer+1];
+  if(!next||state.ore<next.cost){ sfxNo(); return; }
+  state.ore-=next.cost; state.layer++;
+  sfxUnlock(); toast('已深入：'+next.icon+' '+next.name);
+  renderShop();
+};
+$('prestigeOpen').onclick=()=>{
+  const n=pendingCrystals();
+  $('ownedCrystals').textContent=fmt(state.crystals);
+  $('pendingCrystals').textContent=fmt(n);
+  $('currentBonus').textContent='+'+(state.crystals*5)+'%';
+  $('nextBonus').textContent='+'+((state.crystals+n)*5)+'%';
+  $('prestigeDo').disabled=n<1;
+  $('prestigeModal').classList.add('show');
+};
+$('prestigeDo').onclick=()=>{
+  const n=pendingCrystals();
+  if(n<1){ sfxNo(); return; }
+  const keep={crystals:state.crystals+n, muted:state.muted, playMs:state.playMs};
+  state=Object.assign(defaultState(),keep);
+  state.lastSave=Date.now();
+  sfxPrestige();
+  closeModals();
+  buildLayerStrip(); renderShop(); updateHud(); save();
+  toast('💠 獲得 '+n+' 顆深核水晶，永久增產 +'+(n*5)+'%');
+};
+$('wipeOpen').onclick=()=>$('wipeModal').classList.add('show');
+$('wipeDo').onclick=()=>{
+  localStorage.removeItem(SAVE_KEY);
+  state=defaultState();
+  closeModals();
+  buildLayerStrip(); renderShop(); updateHud();
+  toast('已重新開始');
+};
+
+/* ================= 分頁 / 批量開關 ================= */
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active'); currentTab=t.dataset.tab;
+  $('buyAmount').style.display=currentTab==='miners'?'flex':'none';
+  renderShop();
+});
+document.querySelectorAll('#buyAmount button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#buyAmount button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); buyQty=b.dataset.q; renderShop();
+});
+
+/* ================= 彈窗 / Toast ================= */
+function closeModals(){ document.querySelectorAll('.modal-back').forEach(m=>m.classList.remove('show')); }
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>b.closest('.modal-back').classList.remove('show'));
+document.querySelectorAll('.modal-back').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show');}));
+document.querySelectorAll('.roadmap .locked').forEach(n=>n.onclick=()=>toast('🔒 '+n.dataset.era+'時代敬請期待，先把挖礦做深吧'));
+function toast(msg){
+  const t=document.createElement('div');
+  t.className='toast'; t.textContent=msg;
+  $('toastWrap').appendChild(t);
+  setTimeout(()=>{t.style.transition='opacity .3s';t.style.opacity='0';setTimeout(()=>t.remove(),300);},2200);
+}
+
+/* ================= 主迴圈 ================= */
+let lastT=performance.now();
+function tick(t){
+  const dt=Math.min((t-lastT)/1000,1);
+  lastT=t;
+  state.playMs+=dt*1000;
+  const pps=totalPps();
+  state.ore+=pps*dt; state.runOre+=pps*dt;
+  updateHud();
+  updateShopLive();
+  requestAnimationFrame(tick);
+}
+
+/* ================= 初始化 ================= */
+function init(){
+  const had=load();
+  $('muteBtn').textContent=state.muted?'🔇':'🔊';
+  $('muteBtn').onclick=()=>{
+    initAudio();
+    state.muted=!state.muted;
+    masterGain.gain.linearRampToValueAtTime(state.muted?0:0.4, AC.currentTime+0.05);
+    $('muteBtn').textContent=state.muted?'🔇':'🔊';
+    save();
+  };
+  buildLayerStrip();
+  renderShop();
+  updateHud();
+  if(had) offlineCalc();
+  document.addEventListener('pointerdown',()=>{initAudio();resumeAudio();},{once:true});
+  requestAnimationFrame(tick);
+}
+init();
+setInterval(save,20000);
+window.addEventListener('beforeunload',save);
+</script>
+</body>
+</html>
